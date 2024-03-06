@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="container" style="max-width: 95%;"> <!-- Adjust percentage as needed -->
+        <nav class="navbar navbar-expand-lg" style="background-color: #d6f3fb; border-radius: 20px;">
+            <div class="container-fluid">
+                <a class="navbar-brand" style="color: #000000;"><strong>FinCache</strong></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'main:logout' %}" style="color: #000000;">Logout</a>
+                        </li>
+                    </ul>
+                    <a class="nav-link disabled" aria-disabled="true" style="color: #000000;">Welcome, {{ user }}</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card my-5" style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); background-color: #d6f3fb;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fs-5 mb-3" id="today-date" style="color: #000000;"></h5>
+                        <div class="row">
+                            <div class="col">
+                                <i id="left-chevron" class="fas fa-chevron-left" style="cursor: pointer; color: 000000;"></i>
+                            </div>
+                            <div class="col">
+                                <p class="card-text fs-8"><strong style="color: #000000;">Income</strong></p>
+                                <p class="card-text fs-8" id="income-amount" style="color: #000000;">Number</p>
+                            </div>
+                            <div class="col">
+                                <p class="card-text fs-8"><strong style="color: #000000;">Expenses</strong></p>
+                                <p class="card-text fs-8" id="expenses-amount" style="color: #000000;">Number</p>
+                            </div>
+                            <div class="col">
+                                <p class="card-text fs-8"><strong style="color: #000000;">Transfer</strong></p>
+                                <p class="card-text fs-8" id="transfer-amount" style="color: #000000;">Number</p>
+                            </div>
+                            <div class="col">
+                                <i id="right-chevron" class="fas fa-chevron-right" style="cursor: pointer; color: 000000;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    <button type="button" class="btn rounded-circle position-fixed bottom-0 end-0 m-3 btn-lg" data-bs-toggle="modal" data-bs-target="#exampleModal" style="background-color: #F0FFFF;">
+        +
+    </button>
+
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col">
+                <!-- Dropdown -->
+                <label for="sort-category" class="form-label">Sort by Category:</label>
+                <select class="form-select" id="sort-category">
+                    <option value="all">All</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                    <option value="transfer">Transfer</option>
+                </select>
+            </div>
+        </div>
+    
+        <div class="container">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-info">
+                            <thead class="table-info"> <!-- Add the table-dark class for dark header background -->
+                                <tr>
+                                    <th>Price</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Transaction Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction_table">
+                                <!-- Transaction data -->
+                            </tbody>
+                        </table> 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="card my-5" style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); background-color: #d6f3fb; ">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #000000;">Financial Overview</h5>
+                    <div class="card-text">
+                        <canvas id="financialPieChart" width="200" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br />
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Add Transaction</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form" onsubmit="return false;">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="amount" class="col-form-label">Price:</label>
+                            <input type="number" class="form-control" id="amount" name="amount" min="0" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid price.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="col-form-label">Description:</label>
+                            <input type="text" class="form-control" id="description" name="description"></input>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="col-form-label">Category:</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="Income">Income</option>
+                                <option value="Expense">Expense</option>
+                                <option value="Transfer">Transfer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transaction_type" class="col-form-label">Transaction Type:</label>
+                            <select class="form-select" id="transaction_type" name="transaction_type">
+                                <option value="Transport">Transport</option>
+                                <option value="Going out">Going Out</option>
+                                <option value="Health">Health</option>
+                                <option value="Groceries">Groceries</option>
+                                <option value="Holiday">Holiday</option>
+                                <option value="Children">Children</option>
+                                <option value="Education">Education</option>
+                                <option value="Gifts">Gifts</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Leisure">Leisure</option>
+                                <option value="Savings">Savings</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="button_add" data-bs-dismiss="modal">Add Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let financialPieChart; // Declare the chart variable globally to access it from different functions
+    
+        let unixCurrentDate = Math.floor(currentDate.getTime() / 1000);
+    
+        async function getTransactions() {
+            return fetch("{% url 'main:get_transaction_json_today' %}").then((res) => res.json())
+        }
+    
+        async function refreshTransaction() {
+            document.getElementById("transaction_table").innerHTML = ""
+            const transactions = await getTransactions()
+            const dateResponse = await retrieveTodayDate()
+            const financialReport = await getFinancialReport();
+            let htmlString = ``
+            transactions.forEach((item) => {
+                htmlString += `\n<tr>
+                <td>${item.fields.amount}</td>
+                <td>${item.fields.description}</td>
+                <td>${item.fields.category}</td>
+                <td>${item.fields.transaction_type}</td>
+            </tr>`
+            })
+
+            document.getElementById("transaction_table").innerHTML = htmlString
+            document.getElementById("today-date").innerHTML = dateResponse.formatted_today
+            document.getElementById("income-amount").innerHTML = financialReport.income_total
+            document.getElementById("expenses-amount").innerHTML = financialReport.expenses_total
+            document.getElementById("transfer-amount").innerHTML = financialReport.transfer_total
+            document.getElementById('sort-category').value = 'all';
+
+            createFinancialPieChart('financialPieChart', financialReport);
+        }
+
+        async function createFinancialPieChart(canvasId, financialReport) {
+            const incomeTotal = parseInt(financialReport.income_total);
+            const expensesTotal = parseInt(financialReport.expenses_total);
+            const transferTotal = parseInt(financialReport.transfer_total);
+
+            const total = incomeTotal + expensesTotal + transferTotal;
+
+            const incomePercentage = incomeTotal / total * 100;
+            const expensesPercentage = expensesTotal / total * 100;
+            const transferPercentage = transferTotal / total * 100;
+
+            if (financialPieChart) {
+                financialPieChart.destroy();
+            }
+
+            financialPieChart = new Chart(document.getElementById(canvasId), {
+                type: 'pie',
+                data: {
+                    labels: ['Income', 'Expenses', 'Transfer'],
+                    datasets: [{
+                        label: 'Financial Breakdown',
+                        backgroundColor: ['#F9E0A2', '#519DE9', '#EF9234'],
+                        borderColor: '#000000',
+                        borderWidth: 1,
+                        data: [incomeTotal, expensesTotal, transferTotal]
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: 'Financial Breakdown',
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        labels: {
+                            color: 'red' // Change the color of the labels here
+                        }
+                    }
+                }
+            });
+        }
+    
+        function addTransaction() {
+            const amount = document.getElementById('amount').value.trim();
+            const description = document.getElementById('description').value.trim();
+    
+            if (!amount || !description) {
+                alert("Please fill in all required fields.");
+                return false;
+            }
+    
+            fetch("{% url 'main:add_transaction_ajax' %}", {
+                method: "POST",
+                body: new FormData(document.querySelector('#form'))
+            }).then(refreshTransaction)
+    
+            document.getElementById("form").reset()
+            return false
+        }
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            const amountInput = document.getElementById('amount');
+            amountInput.addEventListener('input', function(event) {
+                if (amountInput.validity.valid) {
+                    amountInput.classList.remove('is-invalid');
+                } else {
+                    amountInput.classList.add('is-invalid');
+                }
+            });
+        });
+    
+        async function refreshTransactionYesterday() {
+            const selectedCategory = document.getElementById("sort-category").value;
+            document.getElementById("transaction_table").innerHTML = ""
+            const transactions = await getTransactionYesterday()
+            const dateResponse = await retrieveDate()
+            const financialReport = await getFinancialReport();
+            let htmlString = ``
+            transactions.forEach((item) => {
+                htmlString += `\n<tr>
+                <td>${item.fields.amount}</td>
+                <td>${item.fields.description}</td>
+                <td>${item.fields.category}</td>
+                <td>${item.fields.transaction_type}</td>
+            </tr>`
+            })
+    
+            document.getElementById("transaction_table").innerHTML = htmlString
+            document.getElementById("today-date").innerHTML = dateResponse.formatted_last_login
+            document.getElementById("income-amount").innerHTML = financialReport.income_total
+            document.getElementById("expenses-amount").innerHTML = financialReport.expenses_total
+            document.getElementById("transfer-amount").innerHTML = financialReport.transfer_total
+            document.getElementById('sort-category').value = 'all';
+            createFinancialPieChart('financialPieChart', financialReport);
+        }
+    
+        async function getTransactionYesterday() {
+            return fetch("{% url 'main:get_transaction_json_yesterday' %}").then((res) => res.json())
+        }
+    
+        async function refreshTransactionTomorrow() {
+            const selectedCategory = document.getElementById("sort-category").value;
+            document.getElementById("transaction_table").innerHTML = ""
+            const transactions = await getTransactionTomorrow()
+            const dateResponse = await retrieveDate()
+            const financialReport = await getFinancialReport();
+            let htmlString = ``
+            transactions.forEach((item) => {
+                htmlString += `\n<tr>
+                <td>${item.fields.amount}</td>
+                <td>${item.fields.description}</td>
+                <td>${item.fields.category}</td>
+                <td>${item.fields.transaction_type}</td>
+            </tr>`
+            })
+    
+            document.getElementById("transaction_table").innerHTML = htmlString
+            document.getElementById("today-date").innerHTML = dateResponse.formatted_last_login
+            document.getElementById("income-amount").innerHTML = financialReport.income_total
+            document.getElementById("expenses-amount").innerHTML = financialReport.expenses_total
+            document.getElementById("transfer-amount").innerHTML = financialReport.transfer_total
+            document.getElementById('sort-category').value = 'all';
+            createFinancialPieChart('financialPieChart', financialReport);
+        }
+
+        async function refreshTransactionSorted(selectedCategory) {
+            document.getElementById("transaction_table").innerHTML = "";
+            let transactions;
+            if (selectedCategory === "all") {
+                transactions = await getAll();
+            } else if (selectedCategory === "income") {
+                transactions = await getIncomeOnly();
+            } else if (selectedCategory === "expense") {
+                transactions = await getExpensesOnly();
+            } else if (selectedCategory === "transfer") {
+                transactions = await getTransferOnly();
+            }
+            const dateResponse = await retrieveDate();
+            const financialReport = await getFinancialReport();
+            let htmlString = ``;
+            transactions.forEach((item) => {
+                htmlString += `\n<tr>
+                <td>${item.fields.amount}</td>
+                <td>${item.fields.description}</td>
+                <td>${item.fields.category}</td>
+                <td>${item.fields.transaction_type}</td>
+            </tr>`;
+            });
+
+            document.getElementById("transaction_table").innerHTML = htmlString;
+            document.getElementById("today-date").innerHTML = dateResponse.formatted_last_login;
+            document.getElementById("income-amount").innerHTML = financialReport.income_total;
+            document.getElementById("expenses-amount").innerHTML = financialReport.expenses_total;
+            document.getElementById("transfer-amount").innerHTML = financialReport.transfer_total;
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sortCategoryDropdown = document.getElementById('sort-category');
+
+            sortCategoryDropdown.addEventListener('change', function(event) {
+                const selectedCategory = event.target.value;
+
+                console.log(selectedCategory);
+
+                if (selectedCategory == "all") {
+                    refreshTransactionSorted(selectedCategory);
+                } else if (selectedCategory == "income") {
+                    refreshTransactionSorted(selectedCategory);
+                } else if (selectedCategory == "expense") {
+                    refreshTransactionSorted(selectedCategory);
+                } else if (selectedCategory == "transfer") {
+                    refreshTransactionSorted(selectedCategory);
+                }
+            });
+        });
+
+    
+        async function getTransactionTomorrow() {
+            return fetch("{% url 'main:get_transaction_json_tomorrow' %}").then((res) => res.json())
+        }
+    
+        async function retrieveDate() {
+            return fetch("{% url 'main:format_last_login' %}").then((res) => res.json())
+        }
+
+        async function retrieveTodayDate() {
+            return fetch("{% url 'main:format_today' %}").then((res) => res.json())
+        }
+
+        async function getFinancialReport(){
+            return fetch("{% url 'main:financial_report' %}").then((res) => res.json())
+        }
+
+        async function getAll(){
+            return fetch("{% url 'main:get_transaction_json_all' %}").then((res) => res.json())
+        }
+
+        async function getIncomeOnly(){
+            return fetch("{% url 'main:get_transaction_json_income' %}").then((res) => res.json())
+        }
+
+
+        async function getExpensesOnly(){
+            return fetch("{% url 'main:get_transaction_json_expenses' %}").then((res) => res.json())
+        }
+
+        async function getTransferOnly(){
+            return fetch("{% url 'main:get_transaction_json_transfer' %}").then((res) => res.json())
+        }
+    
+        const leftChevron = document.getElementById('left-chevron');
+        const rightChevron = document.getElementById('right-chevron');
+    
+        leftChevron.addEventListener('click', refreshTransactionYesterday);
+    
+        rightChevron.addEventListener('click', refreshTransactionTomorrow);
+    
+        document.getElementById("button_add").onclick = addTransaction
+    
+        refreshTransaction()
+    </script>
+    
+    
+{% endblock content %}
