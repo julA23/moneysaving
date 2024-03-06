@@ -95,6 +95,10 @@ if PRODUCTION:
     }
     DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://fincache.adaptable.app'
+]
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
